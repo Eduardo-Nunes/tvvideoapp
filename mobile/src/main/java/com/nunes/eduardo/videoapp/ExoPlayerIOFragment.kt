@@ -9,7 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
 import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.source.ads.AdsMediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
@@ -20,14 +22,15 @@ private const val ARG_PARAM2 = "title"
 
 class ExoPlayerIOFragment : Fragment() {
     private var player: SimpleExoPlayer? = null
-    private var videoSource: String? = null
+    private var adsLoader: ImaAdsLoader? = null
+    private var videoSrc: String? = null
     private var videoTitle: String? = null
     private var listener: OnFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            videoSource = it.getString(ARG_PARAM1)
+            videoSrc = it.getString(ARG_PARAM1)
             videoTitle = it.getString(ARG_PARAM2)
         }
     }
@@ -37,22 +40,41 @@ class ExoPlayerIOFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_exo_player_io, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    override fun onStart() {
+        super.onStart()
         player = ExoPlayerFactory.newSimpleInstance(activity, DefaultTrackSelector())
 
+        adsLoader = ImaAdsLoader(activity, Uri.parse(Uri.decode(getString(R.string.ad_tag))))
+
         exoPlayerView.player = player
+        exoPlayerView.useController = true
+        exoPlayerView.controllerHideOnTouch = true
+        exoPlayerView.controllerAutoShow = true
 
         val dataSourceFactory = DefaultDataSourceFactory(activity,
                 Util.getUserAgent(activity, "exo-demo"))
 
-        videoSource?.let {
-            ExtractorMediaSource
+        var mediaSource: ExtractorMediaSource? = null
+        videoSrc?.let {
+            mediaSource = ExtractorMediaSource
                     .Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(Uri.decode(it)))
         }
 
+        val adsMediaSource = AdsMediaSource(mediaSource, dataSourceFactory, adsLoader,
+                exoPlayerView.overlayFrameLayout)
+
+        player?.prepare(adsMediaSource)
+
+        player?.playWhenReady = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        exoPlayerView.player = null
+        player?.release()
+        player = null
     }
 
     fun onButtonPressed(uri: Uri) {

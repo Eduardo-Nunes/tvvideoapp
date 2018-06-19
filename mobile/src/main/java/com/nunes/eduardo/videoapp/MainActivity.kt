@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.nunes.eduardo.videoapp.model.Response
+import java.io.Reader
 
 
 class MainActivity : ExoPlayerIOFragment.OnFragmentInteractionListener, AppCompatActivity() {
@@ -38,7 +39,7 @@ class MainActivity : ExoPlayerIOFragment.OnFragmentInteractionListener, AppCompa
 
     private fun getResponseFromJson(): Response{
         val mediaResponseRaw = resources.openRawResource(R.raw.media, TypedValue())
-        val mediaResponseJson = BufferedReader(InputStreamReader(mediaResponseRaw))
+        val mediaResponseJson = BufferedReader(InputStreamReader(mediaResponseRaw) as Reader?)
         return defaultGsonBuilder.fromJson<Response>(mediaResponseJson, object : TypeToken<Response>() {}.type)
     }
 
