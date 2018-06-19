@@ -16,9 +16,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.fragment_exo_player_io.*
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.Reader
 
 private const val ARG_PARAM1 = "source"
 private const val ARG_PARAM2 = "title"
@@ -47,11 +44,7 @@ class ExoPlayerIOFragment : Fragment() {
         super.onStart()
         player = ExoPlayerFactory.newSimpleInstance(activity, DefaultTrackSelector())
 
-        val reader: Reader = BufferedReader( InputStreamReader(resources.openRawResource(R.raw.tag), "UTF8"))
-
-        reader.use {
-            adsLoader = ImaAdsLoader(activity, Uri.parse(Uri.decode(it.readText())))
-        }
+        adsLoader = ImaAdsLoader(activity, Uri.parse(Uri.decode(getString(R.string.ad_tag))))
 
         exoPlayerView.player = player
         exoPlayerView.useController = true
@@ -72,10 +65,6 @@ class ExoPlayerIOFragment : Fragment() {
                 exoPlayerView.overlayFrameLayout)
 
         player?.prepare(adsMediaSource)
-
-//        mediaSource?.let {
-//            player?.prepare(it)
-//        }
 
         player?.playWhenReady = true
     }
