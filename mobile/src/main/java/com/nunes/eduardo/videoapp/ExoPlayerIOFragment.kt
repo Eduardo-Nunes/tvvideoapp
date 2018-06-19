@@ -37,9 +37,8 @@ class ExoPlayerIOFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_exo_player_io, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    override fun onStart() {
+        super.onStart()
         player = ExoPlayerFactory.newSimpleInstance(activity, DefaultTrackSelector())
 
         exoPlayerView.player = player
@@ -47,12 +46,27 @@ class ExoPlayerIOFragment : Fragment() {
         val dataSourceFactory = DefaultDataSourceFactory(activity,
                 Util.getUserAgent(activity, "exo-demo"))
 
+        var mediaSource: ExtractorMediaSource? = null
+
         videoSource?.let {
-            ExtractorMediaSource
+            mediaSource = ExtractorMediaSource
                     .Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(Uri.decode(it)))
         }
 
+        mediaSource?.let {
+            player?.prepare(it)
+        }
+
+        player?.playWhenReady = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        exoPlayerView.player = null
+        player?.release()
+        player = null
     }
 
     fun onButtonPressed(uri: Uri) {
