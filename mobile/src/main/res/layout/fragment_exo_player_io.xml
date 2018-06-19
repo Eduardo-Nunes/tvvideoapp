@@ -8,9 +8,6 @@
 
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/exoPlayerView"
-        app:use_controller="true"
-        app:auto_show="true"
-        app:hide_on_touch="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
