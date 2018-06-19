@@ -14,6 +14,7 @@ import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.ads.AdsMediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.fragment_exo_player_io.*
 
@@ -42,31 +43,39 @@ class ExoPlayerIOFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        player = ExoPlayerFactory.newSimpleInstance(activity, DefaultTrackSelector())
+        player = activity?.let { ExoPlayerFactory.newSimpleInstance(activity, DefaultTrackSelector()) }
 
-        adsLoader = ImaAdsLoader(activity, Uri.parse(Uri.decode(getString(R.string.ad_tag))))
+        adsLoader = activity?.let { ImaAdsLoader(activity, Uri.parse(Uri.decode(getString(R.string.ad_tag)))) }
 
         exoPlayerView.player = player
         exoPlayerView.useController = true
         exoPlayerView.controllerHideOnTouch = true
         exoPlayerView.controllerAutoShow = true
 
+
         val dataSourceFactory = DefaultDataSourceFactory(activity,
                 Util.getUserAgent(activity, "exo-demo"))
 
-        var mediaSource: ExtractorMediaSource? = null
-        videoSrc?.let {
-            mediaSource = ExtractorMediaSource
-                    .Factory(dataSourceFactory)
-                    .createMediaSource(Uri.parse(Uri.decode(it)))
+        val cachedDataSourceFactory = activity?.let { CacheDataSourceFactory( DownloadUtil.getCache(it) , dataSourceFactory) }
+
+        val videoURI = videoSrc?.let {
+            Uri.parse(Uri.decode(it))
         }
 
-        val adsMediaSource = AdsMediaSource(mediaSource, dataSourceFactory, adsLoader,
+        val mediaSource = ExtractorMediaSource
+                .Factory(cachedDataSourceFactory)
+                .createMediaSource(videoURI)
+
+        val adsMediaSource = AdsMediaSource(mediaSource, cachedDataSourceFactory, adsLoader,
                 exoPlayerView.overlayFrameLayout)
 
         player?.prepare(adsMediaSource)
 
         player?.playWhenReady = true
+
+        downloadButton.setOnClickListener {
+            videoURI?.let { onButtonPressed(it) }
+        }
     }
 
     override fun onStop() {
@@ -96,7 +105,6 @@ class ExoPlayerIOFragment : Fragment() {
     }
 
     interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         fun onFragmentInteraction(uri: Uri)
     }
 

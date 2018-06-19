@@ -3,12 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ExoPlayerIOFragment">
 
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/exoPlayerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <ImageButton
+        android:id="@+id/downloadButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="end"
+        android:contentDescription="@string/baixar_filme"
+        android:src="@android:drawable/stat_sys_download"
+        android:theme="@style/Base.Widget.AppCompat.Button.Borderless" />
 
 </FrameLayout>
