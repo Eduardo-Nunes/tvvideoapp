@@ -10,8 +10,8 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import org.jetbrains.anko.startActivity
 
@@ -42,7 +42,7 @@ class PlayerActivity : AppCompatActivity() {
         fullscreen_content_controls.visibility = View.VISIBLE
     }
     private var mVisible: Boolean = false
-    private val mHideRunnable = Runnable { hide() }
+    private val mHideRunnable = Runnable { hideSystemUi() }
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
@@ -55,8 +55,9 @@ class PlayerActivity : AppCompatActivity() {
         false
     }
     private var player: SimpleExoPlayer? = null
-    private val currentWindow: Int = 0
-    private val playbackPosition: Long = 0
+    private var currentWindow: Int = 0
+    private var playbackPosition: Long = 0
+    private var playWhenReady: Boolean = true
     private lateinit var uri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,10 +71,39 @@ class PlayerActivity : AppCompatActivity() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
-        // Trigger the initial hide() shortly after the activity has been
+        // Trigger the initial hideSystemUi() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (Util.SDK_INT > 23) {
+            initializePlayer()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideSystemUi()
+        if ((Util.SDK_INT <= 23 || player == null)) {
+            initializePlayer()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (Util.SDK_INT <= 23) {
+            releasePlayer()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (Util.SDK_INT > 23) {
+            releasePlayer()
+        }
     }
 
     private fun initViews() {
@@ -87,10 +117,10 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initListeners() {
-        // Set up the user interaction to manually show or hide the system UI.
-        fullscreen_content.setOnClickListener { toggle() }
+        // Set up the user interaction to manually showSystemUi or hideSystemUi the system UI.
+        fullscreen_content.setOnClickListener { toggleSystemUi() }
 
-        // Upon interacting with UI controls, delay any scheduled hide()
+        // Upon interacting with UI controls, delay any scheduled hideSystemUi()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         dummy_button.setOnTouchListener(mDelayHideTouchListener)
@@ -106,7 +136,7 @@ class PlayerActivity : AppCompatActivity() {
         exoPlayerView.player = player
         exoPlayerView.useController = true
 
-        player?.playWhenReady = true
+        player?.playWhenReady = playWhenReady
         player?.seekTo(currentWindow, playbackPosition)
 
         val mediaSource = buildMediaSource(uri)
@@ -120,15 +150,25 @@ class PlayerActivity : AppCompatActivity() {
         ).createMediaSource(uri)
     }
 
-    private fun toggle() {
-        if (mVisible) {
-            hide()
-        } else {
-            show()
+    private fun releasePlayer(){
+        player?.let { simpleExoPlayer ->
+            playbackPosition = simpleExoPlayer.currentPosition
+            currentWindow = simpleExoPlayer.currentWindowIndex
+            playWhenReady = simpleExoPlayer.playWhenReady
+            simpleExoPlayer.release()
+            player = null
         }
     }
 
-    private fun hide() {
+    private fun toggleSystemUi() {
+        if (mVisible) {
+            hideSystemUi()
+        } else {
+            showSystemUi()
+        }
+    }
+
+    private fun hideSystemUi() {
         // Hide UI first
         supportActionBar?.hide()
         fullscreen_content_controls.visibility = View.GONE
@@ -139,7 +179,7 @@ class PlayerActivity : AppCompatActivity() {
         mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY.toLong())
     }
 
-    private fun show() {
+    private fun showSystemUi() {
         // Show the system bar
         fullscreen_content.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
@@ -152,7 +192,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
-     * Schedules a call to hide() in [delayMillis], canceling any
+     * Schedules a call to hideSystemUi() in [delayMillis], canceling any
      * previously scheduled calls.
      */
     private fun delayedHide(delayMillis: Int) {

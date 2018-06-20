@@ -15,7 +15,10 @@ import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.nunes.eduardo.playerLib.PlayerActivity
 import com.nunes.eduardo.videoapp.model.Response
+import com.nunes.eduardo.videoapp.model.VideosItem
+import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.alert
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -31,21 +34,43 @@ class MainActivity : ExoPlayerIOFragment.OnFragmentInteractionListener, AppCompa
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        initGoogleIOExample()
-    }
-
-    private fun initGoogleIOExample() {
         val response = getResponseFromJson()
 
         val movie = response.categories?.first()?.videos?.first()
 
-        val exoPlayerIOFragment = ExoPlayerIOFragment.newInstance(movie?.sources?.first(), movie?.title)
+        playOffline.setOnClickListener {
+            movie?.let { initGoogleIOExample(it) }
+        }
+
+        playMp3.setOnClickListener {
+            playContent(getString(R.string.media_url_mp3))
+        }
+
+        playMp4.setOnClickListener {
+            playContent(getString(R.string.media_url_mp4))
+        }
+
+        playDash.setOnClickListener {
+            playContent(getString(R.string.media_url_dash))
+        }
+
+        playBuck.setOnClickListener {
+            playContent(movie?.sources?.first()!!)
+        }
+
+    }
+
+    private fun initGoogleIOExample(movie: VideosItem) {
+        val exoPlayerIOFragment = ExoPlayerIOFragment.newInstance(movie.sources?.first(), movie.title)
 
         supportFragmentManager
                 ?.beginTransaction()
                 ?.add(R.id.rootView, exoPlayerIOFragment)
                 ?.commitNow()
+    }
+
+    private fun playContent(media: String){
+        PlayerActivity.createIntent(this, media)
     }
 
     private val defaultGsonBuilder: Gson

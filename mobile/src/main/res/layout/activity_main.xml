@@ -1,8 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"/>
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/playOffline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Video offline " />
+
+    <Button
+        android:id="@+id/playMp3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play mp3" />
+
+    <Button
+        android:id="@+id/playMp4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play mp4" />
+
+    <Button
+        android:id="@+id/playDash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play Dash" />
+
+    <Button
+        android:id="@+id/playBuck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play Buck and Bunny HD" />
+
+</LinearLayout>
