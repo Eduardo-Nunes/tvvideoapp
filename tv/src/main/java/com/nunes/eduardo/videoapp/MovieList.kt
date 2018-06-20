@@ -16,12 +16,8 @@ package com.nunes.eduardo.videoapp
 
 object MovieList {
     val MOVIE_CATEGORY = arrayOf(
-            "Category Zero",
-            "Category One",
-            "Category Two",
-            "Category Three",
-            "Category Four",
-            "Category Five")
+            "Fun",
+            "Google")
 
     val list: List<Movie> by lazy {
         setupMovies()
@@ -32,7 +28,7 @@ object MovieList {
         val title = arrayOf(
                 "Zeitgeist 2010_ Year in Review",
                 "Google Demo Slam_ 20ft Search",
-                "Introducing Gmail Blue",
+                "Introducing Gmail Blue by Google Friend",
                 "Introducing Google Fiber to the Pole",
                 "Introducing Google Nose")
 

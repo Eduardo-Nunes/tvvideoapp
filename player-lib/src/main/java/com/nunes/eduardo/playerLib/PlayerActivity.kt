@@ -15,7 +15,6 @@ import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import org.jetbrains.anko.startActivity
 
-const val EXTRA_MEDIA = "PlayerActivity.MEDIA_SOURCE"
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
@@ -141,7 +140,7 @@ class PlayerActivity : AppCompatActivity() {
 
         val mediaSource = buildMediaSource(uri)
 
-        player?.prepare(mediaSource, true, false)
+        player?.prepare(mediaSource, false, false)
     }
 
     private fun buildMediaSource(uri: Uri): MediaSource{
@@ -201,6 +200,8 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val EXTRA_MEDIA = "PlayerActivity.MEDIA_SOURCE"
+
         /**
          * Whether or not the system UI should be auto-hidden after
          * [AUTO_HIDE_DELAY_MILLIS] milliseconds.
