@@ -1,11 +1,21 @@
 package com.nunes.eduardo.playerLib
 
-import android.support.v7.app.AppCompatActivity
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.support.v7.app.AppCompatActivity
 import android.view.View
+import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import kotlinx.android.synthetic.main.activity_player.*
+import org.jetbrains.anko.startActivity
 
+const val EXTRA_MEDIA = "PlayerActivity.MEDIA_SOURCE"
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
@@ -44,22 +54,17 @@ class PlayerActivity : AppCompatActivity() {
         }
         false
     }
+    private var player: SimpleExoPlayer? = null
+    private val currentWindow: Int = 0
+    private val playbackPosition: Long = 0
+    private lateinit var uri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_player)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        mVisible = true
-
-        // Set up the user interaction to manually show or hide the system UI.
-        fullscreen_content.setOnClickListener { toggle() }
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        dummy_button.setOnTouchListener(mDelayHideTouchListener)
+        initViews()
+        initData()
+        initListeners()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -69,6 +74,50 @@ class PlayerActivity : AppCompatActivity() {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100)
+    }
+
+    private fun initViews() {
+        setContentView(R.layout.activity_player)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        mVisible = true
+    }
+
+    private fun initData() {
+        uri = Uri.parse(intent.extras.getString(EXTRA_MEDIA))
+    }
+
+    private fun initListeners() {
+        // Set up the user interaction to manually show or hide the system UI.
+        fullscreen_content.setOnClickListener { toggle() }
+
+        // Upon interacting with UI controls, delay any scheduled hide()
+        // operations to prevent the jarring behavior of controls going away
+        // while interacting with the UI.
+        dummy_button.setOnTouchListener(mDelayHideTouchListener)
+    }
+
+    private fun initializePlayer() {
+        player = ExoPlayerFactory.newSimpleInstance(
+                DefaultRenderersFactory(this),
+                DefaultTrackSelector(),
+                DefaultLoadControl()
+        )
+
+        exoPlayerView.player = player
+        exoPlayerView.useController = true
+
+        player?.playWhenReady = true
+        player?.seekTo(currentWindow, playbackPosition)
+
+        val mediaSource = buildMediaSource(uri)
+
+        player?.prepare(mediaSource, true, false)
+    }
+
+    private fun buildMediaSource(uri: Uri): MediaSource{
+        return ExtractorMediaSource.Factory(
+                DefaultHttpDataSourceFactory("exoplayer-codelab")
+        ).createMediaSource(uri)
     }
 
     private fun toggle() {
@@ -102,10 +151,6 @@ class PlayerActivity : AppCompatActivity() {
         mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY.toLong())
     }
 
-    private fun initializePlayer(){
-
-    }
-
     /**
      * Schedules a call to hide() in [delayMillis], canceling any
      * previously scheduled calls.
@@ -133,5 +178,9 @@ class PlayerActivity : AppCompatActivity() {
          * and a change of the status and navigation bar.
          */
         private val UI_ANIMATION_DELAY = 300
+
+        fun createIntent(context: Context, media: String) {
+            context.startActivity<PlayerActivity>(EXTRA_MEDIA to media)
+        }
     }
 }

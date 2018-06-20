@@ -7,7 +7,7 @@
     <application>
         <activity
             android:name="com.nunes.eduardo.playerLib.PlayerActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:label="@string/title_activity_player"
             android:theme="@style/FullscreenTheme"
             android:screenOrientation="landscape"/>
