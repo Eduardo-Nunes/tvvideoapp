@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.nunes.eduardo.playerLib.PlayerActivity">
+
+    <FrameLayout
+        android:id="@+id/fullscreen_content"
+        android:background="#0099cc"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:id="@+id/video_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:keepScreenOn="true"/>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/fullscreen_content_controls"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="end">
+
+        <ImageButton
+            android:id="@+id/dummy_button"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:contentDescription="@string/exo_controls_fullscreen_description"
+            android:src="@drawable/exo_controls_fullscreen_enter" />
+
+    </LinearLayout>
+
+</FrameLayout>
