@@ -9,7 +9,11 @@ import android.view.View
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.dash.DashMediaSource
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
@@ -57,6 +61,7 @@ class PlayerActivity : AppCompatActivity() {
     private var currentWindow: Int = 0
     private var playbackPosition: Long = 0
     private var playWhenReady: Boolean = true
+    private val bandwidthMeter = DefaultBandwidthMeter()
     private lateinit var uri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,7 +133,9 @@ class PlayerActivity : AppCompatActivity() {
     private fun initializePlayer() {
         player = ExoPlayerFactory.newSimpleInstance(
                 DefaultRenderersFactory(this),
-                DefaultTrackSelector(),
+                DefaultTrackSelector(
+                        AdaptiveTrackSelection.Factory(bandwidthMeter)
+                ),
                 DefaultLoadControl()
         )
 
@@ -144,8 +151,14 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun buildMediaSource(uri: Uri): MediaSource{
-        return ExtractorMediaSource.Factory(
-                DefaultHttpDataSourceFactory("exoplayer-codelab")
+        val manifestDataSourceFactory = DefaultHttpDataSourceFactory("ua")
+        val dashChunkSourceFactory = DefaultDashChunkSource.Factory(
+                DefaultHttpDataSourceFactory("ua", bandwidthMeter)
+        )
+
+        return DashMediaSource.Factory(
+                dashChunkSourceFactory,
+                manifestDataSourceFactory
         ).createMediaSource(uri)
     }
 
