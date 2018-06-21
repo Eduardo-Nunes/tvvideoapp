@@ -1,25 +1,35 @@
 package com.nunes.eduardo.playerLib
 
 import android.content.Context
+import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.Surface
 import android.view.View
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.Player.DefaultEventListener
+import com.google.android.exoplayer2.analytics.AnalyticsListener
+import com.google.android.exoplayer2.decoder.DecoderCounters
+import com.google.android.exoplayer2.metadata.Metadata
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.MediaSourceEventListener
+import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 import org.jetbrains.anko.startActivity
+import java.io.IOException
+import java.lang.Exception
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -159,6 +169,7 @@ class PlayerActivity : AppCompatActivity() {
         player?.playWhenReady = playWhenReady
         player?.seekTo(currentWindow, playbackPosition)
         player?.addListener(componentListener)
+        player?.addAnalyticsListener(componentListener)
 
         val mediaSource = buildMediaSource(uri)
 
@@ -254,9 +265,9 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    class ComponentListener: DefaultEventListener() {
-
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+    class ComponentListener: DefaultEventListener(), AnalyticsListener {
+        override fun onPlayerStateChanged(eventTime: AnalyticsListener.EventTime?,
+                                          playWhenReady: Boolean, playbackState: Int) {
             val stateString = when(playbackState){
                 Player.STATE_IDLE -> STATE_IDLE
                 Player.STATE_BUFFERING -> STATE_BUFFERING
@@ -265,8 +276,107 @@ class PlayerActivity : AppCompatActivity() {
                 else -> UNKNOWN_STATE
             }
 
-            Log.d(TAG, "changed state to " + stateString
+            Log.d(TAG,  "In"+ eventTime.toString() +
+                    "changed state to " + stateString
                     + " playWhenReady: " + playWhenReady)
         }
+
+        override fun onPlaybackParametersChanged(eventTime: AnalyticsListener.EventTime?,
+                                                 playbackParameters: PlaybackParameters?) {}
+
+        override fun onSeekProcessed(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onTracksChanged(eventTime: AnalyticsListener.EventTime?,
+                                     trackGroups: TrackGroupArray?,
+                                     trackSelections: TrackSelectionArray?) {}
+
+        override fun onPlayerError(eventTime: AnalyticsListener.EventTime?,
+                                   error: ExoPlaybackException?) {}
+
+        override fun onLoadingChanged(eventTime: AnalyticsListener.EventTime?, isLoading: Boolean) {}
+
+        override fun onPositionDiscontinuity(eventTime: AnalyticsListener.EventTime?, reason: Int) {}
+
+        override fun onRepeatModeChanged(eventTime: AnalyticsListener.EventTime?, repeatMode: Int) {}
+
+        override fun onTimelineChanged(eventTime: AnalyticsListener.EventTime?, reason: Int) {}
+
+        override fun onSeekStarted(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onDownstreamFormatChanged(eventTime: AnalyticsListener.EventTime?,
+                                               mediaLoadData: MediaSourceEventListener.MediaLoadData?) {}
+
+        override fun onDrmKeysLoaded(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onMediaPeriodCreated(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onRenderedFirstFrame(eventTime: AnalyticsListener.EventTime?, surface: Surface?) {}
+
+        override fun onReadingStarted(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onBandwidthEstimate(eventTime: AnalyticsListener.EventTime?, totalLoadTimeMs: Int,
+                                         totalBytesLoaded: Long, bitrateEstimate: Long) {}
+
+        override fun onNetworkTypeChanged(eventTime: AnalyticsListener.EventTime?,
+                                          networkInfo: NetworkInfo?) {}
+
+        override fun onViewportSizeChange(eventTime: AnalyticsListener.EventTime?, width: Int,
+                                          height: Int) {}
+
+        override fun onDrmKeysRestored(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onDecoderDisabled(eventTime: AnalyticsListener.EventTime?, trackType: Int,
+                                       decoderCounters: DecoderCounters?) {}
+
+        override fun onShuffleModeChanged(eventTime: AnalyticsListener.EventTime?, shuffleModeEnabled: Boolean) {}
+
+        override fun onDecoderInputFormatChanged(eventTime: AnalyticsListener.EventTime?,
+                                                 trackType: Int, format: Format?) {}
+
+        override fun onAudioSessionId(eventTime: AnalyticsListener.EventTime?, audioSessionId: Int) {}
+
+        override fun onDrmSessionManagerError(eventTime: AnalyticsListener.EventTime?, error: Exception?) {}
+
+        override fun onLoadStarted(eventTime: AnalyticsListener.EventTime?,
+                                   loadEventInfo: MediaSourceEventListener.LoadEventInfo?,
+                                   mediaLoadData: MediaSourceEventListener.MediaLoadData?) {}
+
+        override fun onUpstreamDiscarded(eventTime: AnalyticsListener.EventTime?,
+                                         mediaLoadData: MediaSourceEventListener.MediaLoadData?) {}
+
+        override fun onLoadCanceled(eventTime: AnalyticsListener.EventTime?,
+                                    loadEventInfo: MediaSourceEventListener.LoadEventInfo?,
+                                    mediaLoadData: MediaSourceEventListener.MediaLoadData?) {}
+
+        override fun onMediaPeriodReleased(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onDecoderInitialized(eventTime: AnalyticsListener.EventTime?, trackType: Int,
+                                          decoderName: String?, initializationDurationMs: Long) {}
+
+        override fun onDroppedVideoFrames(eventTime: AnalyticsListener.EventTime?, droppedFrames: Int,
+                                          elapsedMs: Long) {}
+
+        override fun onDecoderEnabled(eventTime: AnalyticsListener.EventTime?, trackType: Int,
+                                      decoderCounters: DecoderCounters?) {}
+
+        override fun onVideoSizeChanged(eventTime: AnalyticsListener.EventTime?, width: Int,
+                                        height: Int, unappliedRotationDegrees: Int,
+                                        pixelWidthHeightRatio: Float) {}
+
+        override fun onAudioUnderrun(eventTime: AnalyticsListener.EventTime?, bufferSize: Int,
+                                     bufferSizeMs: Long, elapsedSinceLastFeedMs: Long) {}
+
+        override fun onLoadCompleted(eventTime: AnalyticsListener.EventTime?,
+                                     loadEventInfo: MediaSourceEventListener.LoadEventInfo?,
+                                     mediaLoadData: MediaSourceEventListener.MediaLoadData?) {}
+
+        override fun onDrmKeysRemoved(eventTime: AnalyticsListener.EventTime?) {}
+
+        override fun onLoadError(eventTime: AnalyticsListener.EventTime?,
+                                 loadEventInfo: MediaSourceEventListener.LoadEventInfo?,
+                                 mediaLoadData: MediaSourceEventListener.MediaLoadData?,
+                                 error: IOException?, wasCanceled: Boolean) {}
+
+        override fun onMetadata(eventTime: AnalyticsListener.EventTime?, metadata: Metadata?) {}
     }
 }
