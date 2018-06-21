@@ -5,8 +5,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.Player.DefaultEventListener
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.dash.DashMediaSource
@@ -23,6 +25,14 @@ import org.jetbrains.anko.startActivity
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
+
+private const val STATE_IDLE =      "ExoPlayer.STATE_IDLE      -"
+private const val STATE_BUFFERING = "ExoPlayer.STATE_BUFFERING -"
+private const val STATE_READY =     "ExoPlayer.STATE_READY     -"
+private const val STATE_ENDED =     "ExoPlayer.STATE_ENDED     -"
+private const val UNKNOWN_STATE =   "UNKNOWN_STATE             -"
+private const val TAG = "player"
+
 class PlayerActivity : AppCompatActivity() {
     private val mHideHandler = Handler()
     private val mHidePart2Runnable = Runnable {
@@ -57,11 +67,13 @@ class PlayerActivity : AppCompatActivity() {
         }
         false
     }
+
     private var player: SimpleExoPlayer? = null
     private var currentWindow: Int = 0
     private var playbackPosition: Long = 0
     private var playWhenReady: Boolean = true
     private val bandwidthMeter = DefaultBandwidthMeter()
+    private var componentListener: ComponentListener? = null
     private lateinit var uri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,6 +140,8 @@ class PlayerActivity : AppCompatActivity() {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         dummy_button.setOnTouchListener(mDelayHideTouchListener)
+
+        componentListener = ComponentListener()
     }
 
     private fun initializePlayer() {
@@ -144,6 +158,7 @@ class PlayerActivity : AppCompatActivity() {
 
         player?.playWhenReady = playWhenReady
         player?.seekTo(currentWindow, playbackPosition)
+        player?.addListener(componentListener)
 
         val mediaSource = buildMediaSource(uri)
 
@@ -167,6 +182,7 @@ class PlayerActivity : AppCompatActivity() {
             playbackPosition = simpleExoPlayer.currentPosition
             currentWindow = simpleExoPlayer.currentWindowIndex
             playWhenReady = simpleExoPlayer.playWhenReady
+            simpleExoPlayer.removeListener(componentListener)
             simpleExoPlayer.release()
             player = null
         }
@@ -235,6 +251,22 @@ class PlayerActivity : AppCompatActivity() {
 
         fun createIntent(context: Context, media: String) {
             context.startActivity<PlayerActivity>(EXTRA_MEDIA to media)
+        }
+    }
+
+    class ComponentListener: DefaultEventListener() {
+
+        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+            val stateString = when(playbackState){
+                Player.STATE_IDLE -> STATE_IDLE
+                Player.STATE_BUFFERING -> STATE_BUFFERING
+                Player.STATE_READY -> STATE_READY
+                Player.STATE_ENDED -> STATE_ENDED
+                else -> UNKNOWN_STATE
+            }
+
+            Log.d(TAG, "changed state to " + stateString
+                    + " playWhenReady: " + playWhenReady)
         }
     }
 }
