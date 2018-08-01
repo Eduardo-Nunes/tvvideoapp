@@ -3,18 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.nunes.eduardo.playerLib.PlayerActivity">
 
     <FrameLayout
         android:id="@+id/fullscreen_content"
-        android:background="#0099cc"
+        android:background="#85000000"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.exoplayer2.ui.PlayerView
+        <com.google.android.exoplayer2.ui.SimpleExoPlayerView
             android:id="@+id/exoPlayerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            app:keep_content_on_player_reset="true"
+            app:controller_layout_id="@layout/custom_playback_control"
             android:gravity="center"
             android:keepScreenOn="true"/>
 
@@ -31,8 +34,8 @@
 
         <ImageButton
             android:id="@+id/dummy_button"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:contentDescription="@string/exo_controls_fullscreen_description"
             android:src="@drawable/exo_controls_fullscreen_enter" />
 

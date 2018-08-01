@@ -14,7 +14,6 @@ import com.google.android.exoplayer2.Player.DefaultEventListener
 import com.google.android.exoplayer2.analytics.AnalyticsListener
 import com.google.android.exoplayer2.decoder.DecoderCounters
 import com.google.android.exoplayer2.metadata.Metadata
-import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceEventListener
 import com.google.android.exoplayer2.source.TrackGroupArray
@@ -27,6 +26,7 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
+import kotlinx.android.synthetic.main.custom_playback_control.*
 import org.jetbrains.anko.startActivity
 import java.io.IOException
 import java.lang.Exception
@@ -44,6 +44,7 @@ private const val UNKNOWN_STATE =   "UNKNOWN_STATE             -"
 private const val TAG = "player"
 
 class PlayerActivity : AppCompatActivity() {
+
     private val mHideHandler = Handler()
     private val mHidePart2Runnable = Runnable {
         // Delayed removal of status and navigation bar
@@ -151,7 +152,9 @@ class PlayerActivity : AppCompatActivity() {
         // while interacting with the UI.
         dummy_button.setOnTouchListener(mDelayHideTouchListener)
 
-        componentListener = ComponentListener()
+        componentListener = ComponentListener {
+
+        }
     }
 
     private fun initializePlayer() {
@@ -164,7 +167,6 @@ class PlayerActivity : AppCompatActivity() {
         )
 
         exoPlayerView.player = player
-        exoPlayerView.useController = true
 
         player?.playWhenReady = playWhenReady
         player?.seekTo(currentWindow, playbackPosition)
@@ -265,7 +267,8 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    class ComponentListener: DefaultEventListener(), AnalyticsListener {
+    class ComponentListener(val seekProceed: (eventTime: AnalyticsListener.EventTime?) -> Unit) : DefaultEventListener(), AnalyticsListener {
+
         override fun onPlayerStateChanged(eventTime: AnalyticsListener.EventTime?,
                                           playWhenReady: Boolean, playbackState: Int) {
             val stateString = when(playbackState){
@@ -284,7 +287,9 @@ class PlayerActivity : AppCompatActivity() {
         override fun onPlaybackParametersChanged(eventTime: AnalyticsListener.EventTime?,
                                                  playbackParameters: PlaybackParameters?) {}
 
-        override fun onSeekProcessed(eventTime: AnalyticsListener.EventTime?) {}
+        override fun onSeekProcessed(eventTime: AnalyticsListener.EventTime?) {
+            seekProceed(eventTime)
+        }
 
         override fun onTracksChanged(eventTime: AnalyticsListener.EventTime?,
                                      trackGroups: TrackGroupArray?,
